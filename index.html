@@ -172,7 +172,7 @@
       <button onclick="segPick('compliance', false, this)">No / Not sure</button>
     </div>
 
-    <div class="check"><input type="checkbox" id="ack"><span>I confirm these answers are accurate. I understand my quote is an estimate subject to verification — and where flagged, subject to <strong>management preapproval</strong> before onboarding.</span></div>
+    <div class="qlabel">Have you worked with a property management company before?</div> <p class="qhint">Every operator runs different systems — no two management companies are alike, just like no two doctors or hairdressers. Please don't judge us by a past experience.</p> <div class="seg" id="seg-priorpm"> <button onclick="segPick('priorpm', true, this)">Yes</button> <button onclick="segPick('priorpm', false, this)">No</button> </div> <div class="qlabel">Are you comfortable working with technology?</div> <p class="qhint">90% of our system runs on technology — portals, e-signatures, automated updates. High-tech and high-touch.</p> <div class="seg" id="seg-techok"> <button onclick="segPick('techok', true, this)">Yes</button> <button onclick="segPick('techok', false, this)">No</button> </div> <div class="check"><input type="checkbox" id="ack"><span>I confirm these answers are accurate. I understand my quote is an estimate subject to verification — and where flagged, subject to <strong>management preapproval</strong> before onboarding.</span></div>
 
     <button class="btn btn-blue" onclick="buildQuote()">Generate My Quote &rarr;</button>
     <p style="text-align:center;margin-top:12px;"><a href="#" onclick="goStep1();return false;" style="color:#5b7a99;font-size:14px;">&larr; Back</a></p>
@@ -248,14 +248,14 @@ var QUOTE_LOG = {
   formId: "__QUOTE_FORM_ID__",
   entries: { ref:"__E_REF__", address:"__E_ADDRESS__", zip:"__E_ZIP__", units:"__E_UNITS__",
     location:"__E_LOCATION__", rent:"__E_RENT__", boardups:"__E_BOARDUPS__", crime:"__E_CRIME__",
-    ready:"__E_READY__", willing:"__E_WILLING__", compliance:"__E_COMPLIANCE__",
+    ready:"__E_READY__", willing:"__E_WILLING__", compliance:"__E_COMPLIANCE__", priorpm:"__E_PRIORPM__", techok:"__E_TECHOK__",
     stdpct:"__E_STDPCT__", stdmo:"__E_STDMO__", prempct:"__E_PREMPC__", premmo:"__E_PREMMO__",
     onboard:"__E_ONBOARD__", reserve:"__E_RESERVE__", flags:"__E_FLAGS__" }
 };
 var DEMO_URL = "https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ3zbwCNKhw-BEc9yIPlupXupRUoVoxgMdELzN0jUe6NYdOfGIaS46mhZT4CHQd82a2jKfbYAZAK";
 var FAST_TRACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLScAs6yFxg14BmVkQxGMjF8wSaGoAHfQqSvCqffs8mWH-aHuKw/viewform";
 
-var ans = { boardups: null, crime: null, ready: null, willing: null, compliance: null };
+var ans = { boardups: null, crime: null, ready: null, willing: null, compliance: null, priorpm: null, techok: null };
 
 function money(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
 function esc(s) { return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
@@ -291,7 +291,7 @@ function goStep2() {
 }
 function hideAll(){ ["step1","step2","step3","notfit"].forEach(function(id){ document.getElementById(id).classList.add("hidden"); }); }
 function resetAll(){
-  ans = { boardups: null, crime: null, ready: null, willing: null, compliance: null };
+  ans = { boardups: null, crime: null, ready: null, willing: null, compliance: null, priorpm: null, techok: null };
   Array.prototype.forEach.call(document.querySelectorAll(".seg button"), function(b){ b.classList.remove("selected-yes","selected-no"); });
   document.getElementById("ack").checked = false;
   document.getElementById("boardup-count-wrap").classList.add("hidden");
@@ -304,7 +304,7 @@ function buildQuote() {
   if (ans.crime === null) { alert("Please answer the area question."); return; }
   if (ans.ready === null) { alert("Please tell us if the property is rent-ready."); return; }
   if (ans.ready === false && ans.willing === null) { alert("Please tell us if you're prepared to bring it up to brand standard."); return; }
-  if (ans.compliance === null) { alert("Please answer the licensing question."); return; }
+  if (ans.compliance === null) { alert("Please answer the licensing question."); return; } if (ans.priorpm === null) { alert("Please tell us if you've worked with a property manager before."); return; } if (ans.techok === null) { alert("Please tell us if you're comfortable with technology."); return; }
   if (!document.getElementById("ack").checked) { alert("Please confirm your answers with the checkbox so we can generate your quote."); return; }
 
   // Weed-out: not rent-ready and not willing to get there
@@ -364,7 +364,7 @@ function buildQuote() {
   dl.push(bCount > 0 ? {t:"Boarded-up properties on the block: " + bCount, w:true} : {t:"No boarded-up properties on the block"});
   dl.push(ans.crime ? {t:"Area self-reported as high-crime", w:true} : {t:"Area not reported as high-crime"});
   dl.push(ans.ready ? {t:"Property is rent-ready"} : {t:"Not rent-ready — owner will bring to brand standard"});
-  dl.push(ans.compliance ? {t:"Prepared to meet licensing & inspection requirements"} : {t:"Licensing/compliance to be confirmed", w:true});
+  dl.push(ans.compliance ? {t:"Prepared to meet licensing & inspection requirements"} : {t:"Licensing/compliance to be confirmed", w:true}); dl.push(ans.priorpm ? {t:"Has worked with a property manager before"} : {t:"First time working with a property manager"}); dl.push(ans.techok ? {t:"Comfortable with technology"} : {t:"Prefers low-tech communication — our team will accommodate", w:true});
   document.getElementById("disclosure-list").innerHTML = dl.map(function(x){
     return '<li class="'+(x.w?"warn":"")+'">' + esc(x.t) + "</li>";
   }).join("");
@@ -382,7 +382,7 @@ function buildQuote() {
 
   logQuote({ ref:ref, address:address, zip:zip, units:units, location:locName, rent:rent,
     boardups:bCount, crime:ans.crime?"Yes":"No", ready:ans.ready?"Yes":"No",
-    willing:ans.ready?"n/a":(ans.willing?"Yes":"No"), compliance:ans.compliance?"Yes":"No",
+    willing:ans.ready?"n/a":(ans.willing?"Yes":"No"), compliance:ans.compliance?"Yes":"No", priorpm:ans.priorpm?"Yes":"No", techok:ans.techok?"Yes":"No",
     stdpct:std, stdmo:Math.round(stdMo), prempct:prem, premmo:Math.round(premMo),
     onboard:obTotal, reserve:resTotal, flags:flags.join("; ") || "none" });
 }
@@ -395,7 +395,7 @@ function logQuote(q) {
     fd.append(E.ref, q.ref); fd.append(E.address, q.address); fd.append(E.zip, q.zip);
     fd.append(E.units, q.units); fd.append(E.location, q.location); fd.append(E.rent, q.rent);
     fd.append(E.boardups, q.boardups); fd.append(E.crime, q.crime); fd.append(E.ready, q.ready);
-    fd.append(E.willing, q.willing); fd.append(E.compliance, q.compliance);
+    fd.append(E.willing, q.willing); fd.append(E.compliance, q.compliance); fd.append(E.priorpm, q.priorpm); fd.append(E.techok, q.techok);
     fd.append(E.stdpct, q.stdpct); fd.append(E.stdmo, q.stdmo);
     fd.append(E.prempct, q.prempct); fd.append(E.premmo, q.premmo);
     fd.append(E.onboard, q.onboard); fd.append(E.reserve, q.reserve); fd.append(E.flags, q.flags);
