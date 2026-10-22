@@ -610,39 +610,27 @@ function logQuote(q) {
 </div>
 <script>
 (function(){
-  var KEY='pwFirst5Seen';
-  try{ if(sessionStorage.getItem(KEY)) return; }catch(e){}
   var overlay=document.getElementById('pw-first5-overlay');
   if(!overlay) return;
-  var shown=false, visibleSince=0;
-  function show(){
-    if(shown) return; shown=true;
-    overlay.style.display='flex';
-    try{ sessionStorage.setItem(KEY,'1'); }catch(e){}
-  }
+  var shownForResult=false, visibleSince=0;
+  function show(){ overlay.style.display='flex'; }
   function hide(){ overlay.style.display='none'; }
   document.getElementById('pw-first5-close').addEventListener('click',hide);
   document.getElementById('pw-first5-dismiss').addEventListener('click',hide);
   document.getElementById('pw-first5-cta').addEventListener('click',hide);
   overlay.addEventListener('click',function(ev){ if(ev.target===overlay) hide(); });
   function resultVisible(){
-    var els=document.querySelectorAll('h1,h2,h3,div,span,p');
-    for(var i=0;i<els.length;i++){
-      var t=(els[i].textContent||'');
-      if(t.indexOf('Your instant quote')>-1 || /PWQ-/.test(t)){
-        var r=els[i].getBoundingClientRect();
-        var st=window.getComputedStyle(els[i]);
-        if(r.height>0 && st.display!=='none' && st.visibility!=='hidden') return true;
-      }
-    }
-    return false;
+    var s3=document.getElementById('step3');
+    if(!s3 || s3.classList.contains('hidden')) return false;
+    var st=window.getComputedStyle(s3);
+    if(st.display==='none' || st.visibility==='hidden') return false;
+    return s3.getBoundingClientRect().height>0;
   }
-  var timer=setInterval(function(){
-    if(shown){ clearInterval(timer); return; }
+  setInterval(function(){
     if(resultVisible()){
       if(!visibleSince) visibleSince=Date.now();
-      if(Date.now()-visibleSince>1200){ show(); clearInterval(timer); }
-    } else { visibleSince=0; }
+      if(Date.now()-visibleSince>1200 && !shownForResult){ shownForResult=true; show(); }
+    } else { visibleSince=0; shownForResult=false; }
   },400);
 })();
 </script>
