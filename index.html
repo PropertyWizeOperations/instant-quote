@@ -80,7 +80,7 @@
   .notfit { text-align: center; padding: 10px 4px; }
   .notfit .big { font-size: 44px; margin-bottom: 10px; }
   .notfit h2 { margin-bottom: 8px; }
-  .notfit p { color: #5b7a99; font-size: 15px; margin-bottom: 6px; }
+  .notfit p { color: #5b7a99; font-size: 15px; margin-bottom: 6px; } .gatecopy p { font-size: 15.5px; color: #1f3348; margin-bottom: 14px; } .gatecopy p:last-child { margin-bottom: 0; }
   .footer { background: #00294f; color: #fff; text-align: center; padding: 22px 16px; font-size: 13px; letter-spacing: 1.5px; }
   .footer a { color: #fff; text-decoration: none; }
   @media (max-width: 520px) { .plans { flex-direction: column; } .row { flex-direction: column; } .hero h1 { font-size: 25px; } }
@@ -261,7 +261,7 @@
     </div>
   </div>
 
-  <!-- NOT A FIT -->
+  <!-- SCREENED OUT AT QUALIFY GATE --><div id="gate" class="hidden"><div class="card"><div class="gatecopy"><p>Thank you for considering PropertyWize and for sharing the details of your property with us. After reviewing the information provided, we’ve determined that the property isn’t the right fit for our management program at this time.</p><p>We know this may be disappointing, and we never take it lightly when someone trusts us with their investment. Our goal is to be transparent upfront and ensure we’re the right partner for every property we manage.</p><p>If you have another property in the future, we’d be happy to review it. And if you’re ever interested in selling this property, we may be able to explore a purchase as well.</p><p>Thank you again for thinking of PropertyWize. We truly appreciate the opportunity and wish you the best with your property.</p></div><button class="btn btn-green" id="btn-sell">Talk to Our Realty Team About Selling</button><button class="btn btn-outline" onclick="resetAll();return false;">Quote a Different Property</button><p class="logged" id="gate-logged-line"></p></div></div><!-- NOT A FIT -->
   <div id="notfit" class="hidden">
     <div class="card">
       <div class="notfit">
@@ -291,7 +291,7 @@ var QUOTE_LOG = {
 };
 var DEMO_URL = "https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ3zbwCNKhw-BEc9yIPlupXupRUoVoxgMdELzN0jUe6NYdOfGIaS46mhZT4CHQd82a2jKfbYAZAK";
 var INTRO_URL = "https://calendar.app.google/QymvtDy98EJZyqnMA";
-var FAST_TRACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLScAs6yFxg14BmVkQxGMjF8wSaGoAHfQqSvCqffs8mWH-aHuKw/viewform";
+var FAST_TRACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLScAs6yFxg14BmVkQxGMjF8wSaGoAHfQqSvCqffs8mWH-aHuKw/viewform"; var SELL_EMAIL = "endmyheadache@propertywize.com";
 
 var ans = { boardups: null, crime: null, ready: null, willing: null, compliance: null, priorpm: null, techok: null };
 
@@ -353,7 +353,7 @@ function goStep2() {
   hideAll(); document.getElementById("step2").classList.remove("hidden"); setStep(2);
   window.scrollTo({top:0,behavior:"smooth"});
 }
-function hideAll(){ ["step1","step2","step3","notfit"].forEach(function(id){ document.getElementById(id).classList.add("hidden"); }); }
+function hideAll(){ ["step1","step2","step3","notfit","gate"].forEach(function(id){ document.getElementById(id).classList.add("hidden"); }); }
 function resetAll(){
   ans = { boardups: null, crime: null, ready: null, willing: null, compliance: null, priorpm: null, techok: null };
   Array.prototype.forEach.call(document.querySelectorAll(".seg button"), function(b){ b.classList.remove("selected-yes","selected-no"); });
@@ -427,7 +427,7 @@ function buildQuote() {
   var ref = "PWQ-" + d.getFullYear() + String(d.getMonth()+1).padStart(2,"0") + String(d.getDate()).padStart(2,"0")
     + "-" + Math.random().toString(36).slice(2,7).toUpperCase();
 
-  // Render
+    /* HARD QUALIFY GATE (Shanicka 2026-10-23): high-crime area or 2+ boarded-up properties on the block. No quote is rendered - no prices, no Fast Track, no Demo. The lead is still logged with a screened marker. */ if (ans.crime === true || bCount >= 2) { document.getElementById("gate-logged-line").textContent = "Reference " + ref + " — your answers have been logged for our records."; document.getElementById("btn-sell").onclick = function(){ window.location.href = "mailto:" + SELL_EMAIL + "?subject=" + encodeURIComponent("Interested in selling my property - " + address); }; hideAll(); document.getElementById("gate").classList.remove("hidden"); setStep(3); window.scrollTo({top:0,behavior:"smooth"}); logQuote({ ref:ref, address:address, zip:zip, units:units, location:locName, rent:rent, name:document.getElementById("cname").value.trim(), email:document.getElementById("cemail").value.trim(), phone:document.getElementById("cphone").value.trim(), boardups:bCount, crime:ans.crime?"Yes":"No", ready:ans.ready?"Yes":"No", willing:ans.ready?"n/a":(ans.willing?"Yes":"No"), compliance:ans.compliance?"Yes":"No", priorpm:ans.priorpm?"Yes":"No", techok:ans.techok?"Yes":"No", stdpct:std, stdmo:Math.round(stdMo), prempct:prem, premmo:Math.round(premMo), onboard:obTotal, reserve:resTotal, flags:"SCREENED OUT AT QUALIFY GATE; " + (flags.join("; ") || "none") }); return; } /* Render */
   document.getElementById("refchip").textContent = ref;
   document.getElementById("docdate").textContent = d.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
   document.getElementById("prop-summary").innerHTML = "<strong>" + esc(address) + (zip ? ", " + esc(zip) : "") + "</strong> &mdash; " +
