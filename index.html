@@ -117,6 +117,7 @@
     <label class="flabel" for="ptype">What are we quoting?</label>
     <select id="ptype" onchange="onTypeChange()">
       <option value="rental">Single family or small rental (1 to 4 units)</option>
+      <option value="placement">Tenant placement only (we lease it, you manage it)</option>
       <option value="multifamily">Multifamily (5+ units)</option>
       <option value="hoa">HOA / community association</option>
     </select>
@@ -148,7 +149,7 @@
     <div id="rental-fields">
     <label class="flabel" for="rent">Monthly rent per unit (your best estimate)</label>
     <input type="number" id="rent" placeholder="$2,000" min="1" inputmode="decimal">
-    <div class="check"><input type="checkbox" id="vacant"><span><strong>Vacant right now?</strong><br><span style="color:#5b7a99;">Check this if no tenant is currently in place — your onboarding fee is waived.</span></span></div>
+    <div class="check" id="vacant-wrap"><input type="checkbox" id="vacant"><span><strong>Vacant right now?</strong><br><span style="color:#5b7a99;">Check this if no tenant is currently in place — your onboarding fee is waived.</span></span></div>
     </div>
     <button class="btn btn-blue" id="continue-btn" onclick="goStep2()">Continue &rarr;</button>
   </div>
@@ -234,7 +235,7 @@
           <h3 id="plan-a-name">Standard</h3>
           <div class="pct" id="std-pct"></div>
           <div class="mo" id="std-mo"></div>
-          <div class="per">per month</div>
+          <div class="per" id="std-per">per month</div>
           <div class="yr" id="std-yr"></div>
         </div>
         <div class="plan premium">
@@ -242,7 +243,7 @@
           <h3 id="plan-b-name">Premium</h3>
           <div class="pct" id="prem-pct"></div>
           <div class="mo" id="prem-mo"></div>
-          <div class="per">per month</div>
+          <div class="per" id="prem-per">per month</div>
           <div class="yr" id="prem-yr"></div>
           <div class="note" id="plan-b-note">Income Protection: may cover up to 2 months' rent if it stops. Conditions apply.</div>
         </div>
@@ -261,7 +262,22 @@
     </div>
   </div>
 
-  <!-- SCREENED OUT AT QUALIFY GATE --><div id="gate" class="hidden"><div class="card"><div class="gatecopy"><p>Thank you for considering PropertyWize and for sharing the details of your property with us. After reviewing the information provided, we’ve determined that the property isn’t the right fit for our management program at this time.</p><p>We know this may be disappointing, and we never take it lightly when someone trusts us with their investment. Our goal is to be transparent upfront and ensure we’re the right partner for every property we manage.</p><p>If you have another property in the future, we’d be happy to review it. And if you’re ever interested in selling this property, we may be able to explore a purchase as well.</p><p>Thank you again for thinking of PropertyWize. We truly appreciate the opportunity and wish you the best with your property.</p></div><button class="btn btn-green" id="btn-sell">Talk to Our Realty Team About Selling</button><button class="btn btn-outline" onclick="resetAll();return false;">Quote a Different Property</button><p class="logged" id="gate-logged-line"></p></div></div><!-- NOT A FIT -->
+  <!-- SCREENED OUT AT QUALIFY GATE --><div id="gate" class="hidden"><div class="card"><div class="gatecopy"><p>Thank you for considering PropertyWize and for sharing the details of your property with us. After reviewing the information provided, we’ve determined that the property isn’t the right fit for our management program at this time.</p><p>We know this may be disappointing, and we never take it lightly when someone trusts us with their investment. Our goal is to be transparent upfront and ensure we’re the right partner for every property we manage.</p><p>If you have another property in the future, we’d be happy to review it. And if you’re ever interested in selling this property, we may be able to explore a purchase as well.</p><p>Thank you again for thinking of PropertyWize. We truly appreciate the opportunity and wish you the best with your property.</p></div><button class="btn btn-green" id="btn-sell">Talk to Our Realty Team About Selling</button><button class="btn btn-outline" onclick="resetAll();return false;">Quote a Different Property</button><p class="logged" id="gate-logged-line"></p></div></div><!-- PLACEMENT ONLY: BELOW THE $2,500 RENT FLOOR -->
+  <div id="placementfloor" class="hidden">
+    <div class="card">
+      <div class="gatecopy">
+        <p id="placementfloor-line"></p>
+        <p>Placement only is hands-on work: professional marketing and photos, showings handled for you, full applicant screening, lease preparation and signing, and the move-in handoff. To do it well, we offer it on homes renting at $2,500 a month or more.</p>
+        <p>Your home still has options with us. Full management has no rent floor, so we can quote that instead, or talk it through on a quick call.</p>
+      </div>
+      <button class="btn btn-green" id="btn-pf-management">Quote Full Management Instead</button>
+      <button class="btn btn-outline" onclick="window.open(DEMO_URL,'_blank')">Schedule a Call With Our Team</button>
+      <p style="text-align:center;margin-top:12px;"><a href="#" onclick="resetAll();return false;" style="color:#5b7a99;font-size:14px;">Start over</a></p>
+      <p class="logged" id="placementfloor-logged"></p>
+    </div>
+  </div>
+
+  <!-- NOT A FIT -->
   <div id="notfit" class="hidden">
     <div class="card">
       <div class="notfit">
@@ -308,11 +324,14 @@ function minFeePerUnit(units) {
 function onTypeChange() {
   var t = document.getElementById("ptype").value;
   var hoa = (t === "hoa");
+  var placement = (t === "placement");
   document.getElementById("hoa-service-wrap").classList.toggle("hidden", !hoa);
   document.getElementById("rental-fields").classList.toggle("hidden", hoa);
+  document.getElementById("vacant-wrap").classList.toggle("hidden", placement);
   document.getElementById("units-label").textContent = hoa ? "Homes (doors)" : "Units";
   document.getElementById("step1-sub").textContent = hoa ? "Tell us about your community association." :
-    (t === "multifamily" ? "Tell us about the building or portfolio you want managed." : "Tell us about the rental you want managed.");
+    (placement ? "Tell us about the rental you want us to place a tenant in. You keep managing it after move-in." :
+    (t === "multifamily" ? "Tell us about the building or portfolio you want managed." : "Tell us about the rental you want managed."));
   document.getElementById("continue-btn").innerHTML = hoa ? "See My Quote &rarr;" : "Continue &rarr;";
 }
 function esc(s) { return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
@@ -353,8 +372,9 @@ function goStep2() {
   hideAll(); document.getElementById("step2").classList.remove("hidden"); setStep(2);
   window.scrollTo({top:0,behavior:"smooth"});
 }
-function hideAll(){ ["step1","step2","step3","notfit","gate"].forEach(function(id){ document.getElementById(id).classList.add("hidden"); }); }
+function hideAll(){ ["step1","step2","step3","notfit","gate","placementfloor"].forEach(function(id){ document.getElementById(id).classList.add("hidden"); }); }
 function resetAll(){
+  window.PW_QUOTE_KIND = "";
   ans = { boardups: null, crime: null, ready: null, willing: null, compliance: null, priorpm: null, techok: null };
   Array.prototype.forEach.call(document.querySelectorAll(".seg button"), function(b){ b.classList.remove("selected-yes","selected-no"); });
   document.getElementById("ack").checked = false;
@@ -427,7 +447,10 @@ function buildQuote() {
   var ref = "PWQ-" + d.getFullYear() + String(d.getMonth()+1).padStart(2,"0") + String(d.getDate()).padStart(2,"0")
     + "-" + Math.random().toString(36).slice(2,7).toUpperCase();
 
-    /* HARD QUALIFY GATE (Shanicka 2026-10-23): high-crime area or 2+ boarded-up properties on the block. No quote is rendered - no prices, no Fast Track, no Demo. The lead is still logged with a screened marker. */ if (ans.crime === true || bCount >= 2) { document.getElementById("gate-logged-line").textContent = "Reference " + ref + " — your answers have been logged for our records."; document.getElementById("btn-sell").onclick = function(){ window.location.href = "mailto:" + SELL_EMAIL + "?subject=" + encodeURIComponent("Interested in selling my property - " + address); }; hideAll(); document.getElementById("gate").classList.remove("hidden"); setStep(3); window.scrollTo({top:0,behavior:"smooth"}); logQuote({ ref:ref, address:address, zip:zip, units:units, location:locName, rent:rent, name:document.getElementById("cname").value.trim(), email:document.getElementById("cemail").value.trim(), phone:document.getElementById("cphone").value.trim(), boardups:bCount, crime:ans.crime?"Yes":"No", ready:ans.ready?"Yes":"No", willing:ans.ready?"n/a":(ans.willing?"Yes":"No"), compliance:ans.compliance?"Yes":"No", priorpm:ans.priorpm?"Yes":"No", techok:ans.techok?"Yes":"No", stdpct:std, stdmo:Math.round(stdMo), prempct:prem, premmo:Math.round(premMo), onboard:obTotal, reserve:resTotal, flags:"SCREENED OUT AT QUALIFY GATE; " + (flags.join("; ") || "none") }); return; } /* Render */
+    /* HARD QUALIFY GATE (Shanicka 2026-10-23): high-crime area or 2+ boarded-up properties on the block. No quote is rendered - no prices, no Fast Track, no Demo. The lead is still logged with a screened marker. */ if (ans.crime === true || bCount >= 2) { document.getElementById("gate-logged-line").textContent = "Reference " + ref + " — your answers have been logged for our records."; document.getElementById("btn-sell").onclick = function(){ window.location.href = "mailto:" + SELL_EMAIL + "?subject=" + encodeURIComponent("Interested in selling my property - " + address); }; hideAll(); document.getElementById("gate").classList.remove("hidden"); setStep(3); window.scrollTo({top:0,behavior:"smooth"}); logQuote({ ref:ref, address:address, zip:zip, units:units, location:locName, rent:rent, name:document.getElementById("cname").value.trim(), email:document.getElementById("cemail").value.trim(), phone:document.getElementById("cphone").value.trim(), boardups:bCount, crime:ans.crime?"Yes":"No", ready:ans.ready?"Yes":"No", willing:ans.ready?"n/a":(ans.willing?"Yes":"No"), compliance:ans.compliance?"Yes":"No", priorpm:ans.priorpm?"Yes":"No", techok:ans.techok?"Yes":"No", stdpct:std, stdmo:Math.round(stdMo), prempct:prem, premmo:Math.round(premMo), onboard:obTotal, reserve:resTotal, flags:"SCREENED OUT AT QUALIFY GATE; " + (flags.join("; ") || "none") }); return; } /* Tenant placement only branches here (after the hard qualify gate, so a screened-out property never reaches placement pricing either). */ if (ptype === "placement") { buildPlacementQuote({ ref:ref, date:d, address:address, zip:zip, units:units, locName:locName, rent:rent, bCount:bCount, flags:flags, name:document.getElementById("cname").value.trim(), email:document.getElementById("cemail").value.trim(), phone:document.getElementById("cphone").value.trim() }); return; } /* Render */
+  window.PW_QUOTE_KIND = "management";
+  document.getElementById("std-per").textContent = "per month";
+  document.getElementById("prem-per").textContent = "per month";
   document.getElementById("refchip").textContent = ref;
   document.getElementById("docdate").textContent = d.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
   document.getElementById("prop-summary").innerHTML = "<strong>" + esc(address) + (zip ? ", " + esc(zip) : "") + "</strong> &mdash; " +
@@ -486,6 +509,96 @@ function buildQuote() {
     onboard:obTotal, reserve:resTotal, flags:(flags.join("; ") || "none") + (minApplied ? " | minimum fee applied at " + money(minPer) + "/unit" : "") });
 }
 
+/* Tenant placement only (Shanicka, 2026-10-23). Fee schedule by state: Maryland = one full month's rent (100%),
+   North Carolina (Charlotte schedule, adopted 2026-09-27) = 75% of the first month's rent. Both carry the
+   12-month placement guarantee (re-lease at no additional placement fee if a placed tenant defaults within
+   12 months). Placement only is offered on homes renting at $2,500/month or more (Shanicka, 2026-10-12);
+   below that floor no fee is quoted - the owner is offered a full management quote or a call instead.
+   State is read from the location label the visitor picked (the Charlotte option's label names NC;
+   every Maryland option names MD), because the location select reuses the same value for MD counties
+   and Charlotte. */
+function buildPlacementQuote(c) {
+  window.PW_QUOTE_KIND = "placement";
+  var isNC = c.locName.indexOf("NC") > -1;
+  var pct = isNC ? 75 : 100;
+  var stateName = isNC ? "North Carolina" : "Maryland";
+  var feePerUnit = c.rent * pct / 100;
+  var feeTotal = feePerUnit * c.units;
+
+  var logBase = { ref:c.ref, address:c.address, zip:c.zip, units:c.units, location:c.locName, rent:c.rent,
+    name:c.name, email:c.email, phone:c.phone,
+    boardups:c.bCount, crime:ans.crime?"Yes":"No", ready:ans.ready?"Yes":"No",
+    willing:ans.ready?"n/a":(ans.willing?"Yes":"No"), compliance:ans.compliance?"Yes":"No",
+    priorpm:ans.priorpm?"Yes":"No", techok:ans.techok?"Yes":"No" };
+
+  // Below the $2,500 floor: no placement fee is quoted.
+  if (c.rent < 2500) {
+    document.getElementById("placementfloor-line").textContent =
+      "Thank you for considering PropertyWize for tenant placement. Your home's estimated rent is " + money(c.rent) + " a month, and placement only is offered on homes renting at $2,500 a month or more, so we cannot quote a placement fee for this home.";
+    document.getElementById("placementfloor-logged").textContent = "Reference " + c.ref + " — your answers have been logged for our records.";
+    document.getElementById("btn-pf-management").onclick = function(){ document.getElementById("ptype").value = "rental"; resetAll(); };
+    hideAll(); document.getElementById("placementfloor").classList.remove("hidden"); setStep(3);
+    window.scrollTo({top:0,behavior:"smooth"});
+    logQuote(Object.assign({}, logBase, { stdpct:"PLACEMENT BELOW FLOOR", stdmo:0, prempct:"", premmo:0, onboard:0, reserve:0,
+      flags:"PLACEMENT ONLY BELOW $2,500 FLOOR; rent " + money(c.rent) + "; " + (c.flags.join("; ") || "none") }));
+    return;
+  }
+
+  document.getElementById("refchip").textContent = c.ref;
+  document.getElementById("docdate").textContent = c.date.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+  document.getElementById("prop-summary").innerHTML = "<strong>" + esc(c.address) + (c.zip ? ", " + esc(c.zip) : "") + "</strong> &mdash; " +
+    c.units + " unit" + (c.units>1?"s":"") + ", " + esc(c.locName) + ", est. rent " + money(c.rent) + "/mo" + (c.units>1?" per unit":"") + " — tenant placement only";
+  document.getElementById("plan-a-name").textContent = "Tenant Placement";
+  document.getElementById("plan-b-name").textContent = "Placement Guarantee";
+  document.getElementById("plan-b-ribbon").textContent = "INCLUDED";
+  document.getElementById("plan-b-note").textContent = "If a tenant we place defaults within 12 months, we re-lease your home at no additional placement fee.";
+  document.getElementById("cta-note").innerHTML = "<strong>Ready for us to place your tenant?</strong>";
+  var bp = document.getElementById("btn-cta-primary");
+  bp.textContent = "Start Fast Track →"; bp.onclick = function(){ window.open(FAST_TRACK_URL,"_blank"); };
+  var bs = document.getElementById("btn-cta-secondary");
+  bs.classList.remove("hidden"); bs.textContent = "Or Schedule a Live Demo"; bs.onclick = function(){ window.open(DEMO_URL,"_blank"); };
+  document.getElementById("std-pct").textContent = pct + "% of first month's rent (" + stateName + " schedule)";
+  document.getElementById("std-per").textContent = "one-time fee" + (c.units>1 ? ", per unit" : "");
+  document.getElementById("std-mo").textContent = money(feePerUnit);
+  document.getElementById("std-yr").textContent = "Due at lease signing";
+  document.getElementById("prem-pct").textContent = "12-month placement guarantee";
+  document.getElementById("prem-per").textContent = "re-lease fee if our tenant defaults in year 1";
+  document.getElementById("prem-mo").textContent = "$0";
+  document.getElementById("prem-yr").textContent = "Guarantee included at no extra cost";
+  document.getElementById("onetime").innerHTML =
+    "<div><span>Placement fee due at lease signing" + (c.units>1 ? " (" + money(feePerUnit) + " x " + c.units + " units)" : "") + "</span><span><strong>" + money(feeTotal) + "</strong></span></div>" +
+    "<div><span>Monthly management after move-in</span><span>Not included — you manage</span></div>";
+  document.getElementById("fineprint").textContent = "Placement fee is " + pct + "% of the first full month's rent under our " + stateName + " schedule, due at lease signing, one placement fee per unit leased. No monthly management fee, onboarding fee, or contingency reserve applies to placement only. If a tenant we place defaults within 12 months, we re-lease your home at no additional placement fee. Final terms per the placement agreement. Quote valid 30 days. Questions? Call or text (410) 372-6512.";
+
+  var dl = [
+    { t: "Includes professional listing and photos across the major rental sites" },
+    { t: "Showings handled for you, full applicant screening, lease preparation and signing, and the move-in handoff" },
+    { t: "Placement only is a leasing service: it does not include ongoing management, rent collection, or maintenance coordination after move-in", w: true },
+    { t: "Offered on homes renting at $2,500 per month or more — your rent of " + money(c.rent) + " qualifies" }
+  ];
+  dl.push(c.bCount > 0 ? { t:"Boarded-up properties on the block: " + c.bCount, w:true } : { t:"No boarded-up properties on the block" });
+  dl.push(ans.ready ? { t:"Property is rent-ready" } : { t:"Not rent-ready — owner will bring to brand standard" });
+  dl.push(ans.compliance ? { t:"Prepared to meet licensing & inspection requirements" } : { t:"Licensing/compliance to be confirmed", w:true });
+  document.getElementById("disclosure-list").innerHTML = dl.map(function(x){
+    return '<li class="'+(x.w?"warn":"")+'">' + esc(x.t) + "</li>";
+  }).join("");
+
+  var pflags = c.flags.slice();
+  if (c.units > 1) pflags.push("Placement quoted per unit (multi-unit home)");
+  var flagEl = document.getElementById("preapproval-flag");
+  if (pflags.length) {
+    document.getElementById("flag-reasons").innerHTML = pflags.map(function(f){ return "<li>"+esc(f)+"</li>"; }).join("");
+    flagEl.classList.remove("hidden");
+  } else { flagEl.classList.add("hidden"); }
+
+  document.getElementById("logged-line").textContent = "Quote " + c.ref + " has been logged for our records.";
+  hideAll(); document.getElementById("step3").classList.remove("hidden"); setStep(3);
+  window.scrollTo({top:0,behavior:"smooth"});
+
+  logQuote(Object.assign({}, logBase, { stdpct:"PLACEMENT " + pct + "%", stdmo:Math.round(feeTotal), prempct:"12-month guarantee", premmo:0, onboard:0, reserve:0,
+    flags:(pflags.join("; ") || "none") + " | PLACEMENT ONLY quote; " + stateName + " schedule; per-unit fee " + money(feePerUnit) }));
+}
+
 function buildHoaQuote() {
   var address = document.getElementById("address").value.trim();
   var zip = document.getElementById("zip").value.trim();
@@ -511,6 +624,9 @@ function buildHoaQuote() {
 
   document.getElementById("refchip").textContent = ref;
   document.getElementById("docdate").textContent = d.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+  window.PW_QUOTE_KIND = "hoa";
+  document.getElementById("std-per").textContent = "per month";
+  document.getElementById("prem-per").textContent = "per month";
   document.getElementById("prop-summary").innerHTML = "<strong>" + esc(address) + (zip ? ", " + esc(zip) : "") + "</strong> &mdash; " +
     units + " home" + (units>1?"s":"") + ", " + esc(locName) + ", HOA / community association";
   document.getElementById("plan-a-name").textContent = "Full Service";
@@ -620,6 +736,7 @@ function logQuote(q) {
   document.getElementById('pw-first5-cta').addEventListener('click',hide);
   overlay.addEventListener('click',function(ev){ if(ev.target===overlay) hide(); });
   function resultVisible(){
+    if(window.PW_QUOTE_KIND==='placement') return false;
     var s3=document.getElementById('step3');
     if(!s3 || s3.classList.contains('hidden')) return false;
     var st=window.getComputedStyle(s3);
