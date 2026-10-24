@@ -568,13 +568,15 @@ function buildPlacementQuote(c) {
   document.getElementById("onetime").innerHTML =
     "<div><span>Placement fee due at lease signing" + (c.units>1 ? " (" + money(feePerUnit) + " x " + c.units + " units)" : "") + "</span><span><strong>" + money(feeTotal) + "</strong></span></div>" +
     "<div><span>Monthly management after move-in</span><span>Not included — you manage</span></div>";
-  document.getElementById("fineprint").textContent = "Placement fee is " + pct + "% of the first full month's rent under our " + stateName + " schedule, due at lease signing, one placement fee per unit leased. No monthly management fee, onboarding fee, or contingency reserve applies to placement only. If a tenant we place defaults within 12 months, we re-lease your home at no additional placement fee. Final terms per the placement agreement. Quote valid 30 days. Questions? Call or text (410) 372-6512.";
+  document.getElementById("fineprint").textContent = "Placement fee is " + pct + "% of the first full month's rent under our " + stateName + " schedule, due at lease signing, one placement fee per unit leased. We collect and retain the tenant's first month's rent at lease signing. For Section 8 or government agency placements, we retain the security deposit collected from the tenant, equivalent to one month's rent, and the owner is responsible to reimburse it. No monthly management fee, onboarding fee, or contingency reserve applies to placement only. If a tenant we place defaults within 12 months, we re-lease your home at no additional placement fee. If you cancel before a tenant is placed, all marketing expenses must be reimbursed, including but not limited to $100 professional signage, $200 professional photos with 3D tours, and a one-time admin fee of $250. Final terms per the placement agreement. Quote valid 30 days. Questions? Call or text (410) 372-6512.";
 
   var dl = [
     { t: "Includes professional listing and photos across the major rental sites" },
     { t: "Showings handled for you, full applicant screening, lease preparation and signing, and the move-in handoff" },
     { t: "Placement only is a leasing service: it does not include ongoing management, rent collection, or maintenance coordination after move-in", w: true },
-    { t: "Offered on homes renting at $2,500 per month or more — your rent of " + money(c.rent) + " qualifies" }
+    { t: "Offered on homes renting at $2,500 per month or more — your rent of " + money(c.rent) + " qualifies" },
+    { t: "How the fee is collected: we collect and retain the tenant's first month's rent at lease signing. For Section 8 or government agency placements, we retain the security deposit collected from the tenant, equivalent to one month's rent, and the owner is responsible to reimburse it." },
+    { t: "If you cancel before a tenant is placed, all marketing expenses must be reimbursed, including but not limited to $100 professional signage, $200 professional photos with 3D tours, and a one-time admin fee of $250", w: true }
   ];
   dl.push(c.bCount > 0 ? { t:"Boarded-up properties on the block: " + c.bCount, w:true } : { t:"No boarded-up properties on the block" });
   dl.push(ans.ready ? { t:"Property is rent-ready" } : { t:"Not rent-ready — owner will bring to brand standard" });
